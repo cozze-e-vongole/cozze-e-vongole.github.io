@@ -219,12 +219,10 @@ function vistaStatistiche(){
   const fv = LEGA.fantavoti.slice().sort((a,b) => b.v - a.v).slice(0,10);
   const pa = LEGA.panchine.slice().sort((a,b) => b.v - a.v).slice(0,8);
 
-  /* acquisti più cari, presi dalle rose */
   const cari = [];
   Object.keys(SQ).forEach(k => SQ[k].rosa.forEach(g => cari.push({g:g.g, c:g.c, s:k})));
   cari.sort((a,b) => b.c - a.c);
 
-  /* rendimento: crediti spesi per ogni punto di fantavoto medio */
   const rend = LEGA.rendimento.map(r => {
     const med = r.voti.length ? r.voti.reduce((a,b) => a+b, 0) / r.voti.length : 0;
     return {...r, med:+med.toFixed(2), idx: med ? +(r.c / med).toFixed(1) : null};
@@ -233,56 +231,31 @@ function vistaStatistiche(){
   const delusioni = rend.filter(r => r.c >= 80)
     .sort((a,b) => (b.idx === null ? 1e9 : b.idx) - (a.idx === null ? 1e9 : a.idx)).slice(0,6);
 
-  $("sec-statistiche").innerHTML = `
-    <h2>Il termometro delle soglie</h2>
-    <div class="card">${termometro()}
-      <p style="margin:10px 0 0;color:var(--tenue);font-size:16px">Ogni linea tratteggiata è una soglia gol:
-      si parte da 66 e poi ogni 3 punti. I numeri in alto indicano quanti gol vale ogni soglia.
-      In magenta chi è rimasto a un punto e mezzo o meno dal gol successivo.</p></div>
+  const blocchi = [];
 
-    <h2>Per un soffio</h2>
-    <div class="card">${prestazioni().filter(p => mancava(p.punti) <= 2)
-      .sort((a,b) => mancava(a.punti) - mancava(b.punti)).map(p => `<div class="soffio">
-      <span><b>${esc(SQ[p.sq].breve)}</b> ${p.punti} <span class="d">${p.n}ª giornata</span></span>
-      <span style="text-align:right"><b style="color:var(--magenta)">a ${mancava(p.punti)}</b>
-      <span class="d">da quota ${p.punti + mancava(p.punti)}</span></span></div>`).join("")}</div>
-
-    <h2>Il miglior presidente</h2>
-    ${vistaTop11()}
-
-    <h2>Il miglior fantallenatore</h2>
-    <div class="card" style="margin-bottom:8px"><p style="margin:0;color:var(--tenue);font-size:16px">
-      Chi ha lasciato meno punti in panchina: per ogni giornata si confronta la formazione schierata
-      con l'undici migliore possibile, ruolo per ruolo. Più il numero è basso, meglio ha scelto.</p></div>
-    <table><thead><tr><th></th><th>Squadra</th><th class="r">Punti lasciati</th></tr></thead>
-    <tbody>${Object.entries(LEGA.panchine_perse.totali).sort((a,b) => a[1] - b[1])
-      .map(([k,v],i) => `<tr${i?"":' class="primo"'}><td class="n">${i+1}</td>
-      <td><img class="mini" src="${SQ[k].logo}">${esc(SQ[k].breve)}</td>
-      <td class="r"><b>${v}</b></td></tr>`).join("")}</tbody></table>
-
-    <h2>I record</h2>
+  blocchi.push(`<h2>I record</h2>
     <div class="card">
       <p style="margin-top:0"><b>Punteggio più alto</b><br>${esc(SQ[pr[0].sq].breve)} · ${pr[0].punti} punti (${pr[0].n}ª giornata)</p>
       <p style="margin-bottom:0"><b>Punteggio più basso</b><br>${esc(SQ[pr[pr.length-1].sq].breve)} · ${pr[pr.length-1].punti} punti (${pr[pr.length-1].n}ª giornata)</p>
-    </div>
+    </div>`);
 
-    <h2>I fantavoti più alti</h2>
+  blocchi.push(`<h2>I fantavoti più alti</h2>
     <table><thead><tr><th>Giocatore</th><th>Squadra</th><th class="r">Voto</th><th class="r">G</th></tr></thead>
     <tbody>${fv.map(x => `<tr><td>${esc(x.g)}</td><td><img class="mini" src="${SQ[x.s].logo}">${esc(SQ[x.s].breve)}</td>
-      <td class="r"><b>${x.v}</b></td><td class="r">${x.n}ª</td></tr>`).join("")}</tbody></table>
+      <td class="r"><b>${x.v}</b></td><td class="r">${x.n}ª</td></tr>`).join("")}</tbody></table>`);
 
-    <h2>Le panchine d'oro</h2>
+  blocchi.push(`<h2>Le panchine d'oro</h2>
     <table><thead><tr><th>Giocatore</th><th>Squadra</th><th class="r">Voto</th><th class="r">G</th></tr></thead>
     <tbody>${pa.map(x => `<tr><td>${esc(x.g)}</td><td><img class="mini" src="${SQ[x.s].logo}">${esc(SQ[x.s].breve)}</td>
-      <td class="r"><b>${x.v}</b></td><td class="r">${x.n}ª</td></tr>`).join("")}</tbody></table>
+      <td class="r"><b>${x.v}</b></td><td class="r">${x.n}ª</td></tr>`).join("")}</tbody></table>`);
 
-    <h2>Gli acquisti più cari dell'asta</h2>
+  blocchi.push(`<h2>Gli acquisti più cari dell'asta</h2>
     <table><thead><tr><th>Giocatore</th><th>Squadra</th><th class="r">Crediti</th></tr></thead>
     <tbody>${cari.slice(0,10).map(x => `<tr><td>${esc(x.g)}</td>
       <td><img class="mini" src="${SQ[x.s].logo}">${esc(SQ[x.s].breve)}</td>
-      <td class="r"><b>${x.c}</b></td></tr>`).join("")}</tbody></table>
+      <td class="r"><b>${x.c}</b></td></tr>`).join("")}</tbody></table>`);
 
-    <h2>Gli affari dell'asta</h2>
+  blocchi.push(`<h2>Gli affari dell'asta</h2>
     <div class="card" style="margin-bottom:8px"><p style="margin:0;color:var(--tenue);font-size:16px">
       Chi rende di più rispetto a quanto è costato: crediti spesi per ogni punto di fantavoto medio.
       Più il numero è basso, più l'acquisto è stato azzeccato.</p></div>
@@ -290,14 +263,41 @@ function vistaStatistiche(){
     <tbody>${affari.map(x => `<tr><td>${esc(x.g)}<br><span class="d" style="color:var(--tenue)">
       <img class="mini" src="${SQ[x.s].logo}">${esc(SQ[x.s].breve)}</span></td>
       <td class="r">${x.c}</td><td class="r">${x.med}</td>
-      <td class="r"><b style="color:var(--magenta)">${x.idx}</b></td></tr>`).join("")}</tbody></table>
+      <td class="r"><b style="color:var(--magenta)">${x.idx}</b></td></tr>`).join("")}</tbody></table>`);
 
-    <h2>Gli acquisti da rivedere</h2>
+  blocchi.push(`<h2>Gli acquisti da rivedere</h2>
     <table><thead><tr><th>Giocatore</th><th class="r">Crediti</th><th class="r">Media</th><th class="r">Indice</th></tr></thead>
     <tbody>${delusioni.map(x => `<tr><td>${esc(x.g)}<br><span class="d" style="color:var(--tenue)">
       <img class="mini" src="${SQ[x.s].logo}">${esc(SQ[x.s].breve)}</span></td>
       <td class="r">${x.c}</td><td class="r">${x.idx === null ? "mai in campo" : x.med}</td>
-      <td class="r"><b>${x.idx === null ? "-" : x.idx}</b></td></tr>`).join("")}</tbody></table>`;
+      <td class="r"><b>${x.idx === null ? "-" : x.idx}</b></td></tr>`).join("")}</tbody></table>`);
+
+  blocchi.push(`<h2>Il miglior presidente</h2>${vistaTop11()}`);
+
+  blocchi.push(`<h2>Il miglior fantallenatore</h2>
+    <div class="card" style="margin-bottom:8px"><p style="margin:0;color:var(--tenue);font-size:16px">
+      Chi ha lasciato meno punti in panchina: per ogni giornata si confronta la formazione schierata
+      con l'undici migliore possibile, ruolo per ruolo. Più il numero è basso, meglio ha scelto.</p></div>
+    <table><thead><tr><th></th><th>Squadra</th><th class="r">Punti lasciati</th></tr></thead>
+    <tbody>${Object.entries(LEGA.panchine_perse.totali).sort((a,b) => a[1] - b[1])
+      .map(([k,v],i) => `<tr${i?"":' class="primo"'}><td class="n">${i+1}</td>
+      <td><img class="mini" src="${SQ[k].logo}">${esc(SQ[k].breve)}</td>
+      <td class="r"><b>${v}</b></td></tr>`).join("")}</tbody></table>`);
+
+  blocchi.push(`<h2>Per un soffio</h2>
+    <div class="card">${prestazioni().filter(p => mancava(p.punti) <= 2)
+      .sort((a,b) => mancava(a.punti) - mancava(b.punti)).map(p => `<div class="soffio">
+      <span><b>${esc(SQ[p.sq].breve)}</b> ${p.punti} <span class="d">${p.n}ª giornata</span></span>
+      <span style="text-align:right"><b style="color:var(--magenta)">a ${mancava(p.punti)}</b>
+      <span class="d">da quota ${p.punti + mancava(p.punti)}</span></span></div>`).join("")}</div>`);
+
+  blocchi.push(`<h2>Il termometro delle soglie</h2>
+    <div class="card">${termometro()}
+      <p style="margin:10px 0 0;color:var(--tenue);font-size:16px">Ogni linea tratteggiata è una soglia gol:
+      si parte da 66 e poi ogni 3 punti. I numeri in alto indicano quanti gol vale ogni soglia.
+      In magenta chi è rimasto a un punto e mezzo o meno dal gol successivo.</p></div>`);
+
+  $("sec-statistiche").innerHTML = blocchi.join("");
 }
 
 function vistaTop11(){
