@@ -403,14 +403,37 @@ const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["classifica",
                  ["statistiche","Statistiche"],["squadre","Squadre"],["mercato","Mercato"]];
 let sezioneCorrente = "prima";
 
-function mostra(id, push){
+function esisteNumero(n){ return LEGA.uscite.some(u => u.num === n); }
+
+function leggiHash(h){
+  h = String(h || "").replace(/^#/, "").trim();
+  if (!h) return {sez:"prima"};
+  const m = h.match(/^n(\d+(?:[.,]\d+)?)$/i);
+  if (m){
+    const num = parseFloat(m[1].replace(",", "."));
+    return esisteNumero(num) ? {sez:"numero", num:num} : {sez:"prima", ripiego:true};
+  }
+  if (SEZIONI.some(([id]) => id === h)) return {sez:h};
+  return {sez:"prima", ripiego:true};
+}
+
+function indirizzo(sez, num){ return sez === "numero" ? "#n" + num : "#" + sez; }
+
+function mostra(sez, push, num){
   document.querySelectorAll("section").forEach(s => s.classList.remove("on"));
-  $("sec-" + id).classList.add("on");
+  const el = $("sec-" + sez);
+  if (!el) return mostra("prima", push);
+  el.classList.add("on");
   document.querySelectorAll("#nav button").forEach(b =>
-    b.setAttribute("aria-current", b.dataset.sez === id ? "true" : "false"));
-  if (id !== "numero") sezioneCorrente = id;
+    b.setAttribute("aria-current", b.dataset.sez === sez ? "true" : "false"));
+  if (sez !== "numero") sezioneCorrente = sez;
   window.scrollTo(0, 0);
-  if (push) history.pushState({sez:id}, "", "#" + id);
+  if (push) history.pushState({sez:sez, num:(num === undefined ? null : num)}, "", indirizzo(sez, num));
+}
+
+function rendi(st){
+  if (st.sez === "numero"){ vistaNumero(st.num); mostra("numero", false, st.num); }
+  else mostra(st.sez, false);
 }
 
 function init(){
@@ -426,7 +449,11 @@ function init(){
     const nav = e.target.closest("#nav button");
     if (nav){ mostra(nav.dataset.sez, true); return; }
     const apri = e.target.closest("[data-num]");
-    if (apri){ vistaNumero(parseFloat(apri.dataset.num)); mostra("numero", true); return; }
+    if (apri){
+      const num = parseFloat(apri.dataset.num);
+      vistaNumero(num); mostra("numero", true, num);
+      return;
+    }
     const rosa = e.target.closest("[data-rosa]");
     if (rosa){ $("rosa-" + rosa.dataset.rosa).classList.toggle("on"); return; }
     if (e.target.id === "indietro"){ history.back(); return; }
@@ -438,11 +465,28 @@ function init(){
   });
 
   window.addEventListener("popstate", ev => {
-    const id = (ev.state && ev.state.sez) || "prima";
-    mostra(id === "numero" ? sezioneCorrente : id, false);
+    const st = (ev.state && ev.state.sez) ? {sez:ev.state.sez, num:ev.state.num} : leggiHash(location.hash);
+    rendi(st);
   });
-  history.replaceState({sez:"prima"}, "", "#prima");
+
+  window.addEventListener("hashchange", () => {
+    const st = leggiHash(location.hash);
+    if (st.ripiego){ history.replaceState({sez:"prima", num:null}, "", "#prima"); }
+    rendi(st);
+  });
+
   document.documentElement.setAttribute("data-theme", "light");
+
+  const st = leggiHash(location.hash);
+  if (st.sez === "numero"){
+    sezioneCorrente = "archivio";
+    history.replaceState({sez:"archivio", num:null}, "", "#archivio");
+    history.pushState({sez:"numero", num:st.num}, "", "#n" + st.num);
+    rendi(st);
+  } else {
+    history.replaceState({sez:st.sez, num:null}, "", "#" + st.sez);
+    rendi(st);
+  }
 }
 init();
 </script>
