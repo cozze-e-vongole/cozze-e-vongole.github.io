@@ -368,8 +368,8 @@ function vistaStatistiche(){
 
   blocchi.push(`<h2>Il miglior fantallenatore</h2>
     <div class="card" style="margin-bottom:8px"><p style="margin:0;color:var(--tenue);font-size:16px">
-      Chi ha lasciato meno punti in panchina: per ogni giornata si confronta la formazione schierata
-      con l'undici migliore possibile, ruolo per ruolo. Più il numero è basso, meglio ha scelto.</p></div>
+      Ruolo per ruolo, con il modulo schierato: ogni volta che un panchinaro ha preso più di un titolare
+      dello stesso ruolo, la differenza conta come punti lasciati in panchina. Più il numero è basso, meglio ha scelto.</p></div>
     <table><thead><tr><th></th><th>Squadra</th><th class="r">Punti lasciati</th></tr></thead>
     <tbody>${Object.entries(LEGA.panchine_perse.totali).sort((a,b) => a[1] - b[1])
       .map(([k,v],i) => `<tr${i?"":' class="primo"'}><td class="n">${i+1}</td>
