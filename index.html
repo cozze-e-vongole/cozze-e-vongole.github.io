@@ -140,6 +140,13 @@ tr.primo td{background:var(--giallo);color:#121112;font-weight:700}
   background:var(--magenta);color:#fff;border:0;border-radius:10px;padding:12px 16px;width:100%;
   font:inherit;font-weight:700;font-size:17px;cursor:pointer;text-align:left}
 .gvai span{font-size:22px;line-height:1}
+.mini-cl{margin:0 0 12px}
+.mini-cl h3{font-size:16px;margin:0 0 6px}
+.mini-cl .r1{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:15px;border-bottom:1px solid var(--bordo)}
+.mini-cl .r1:last-child{border-bottom:0}
+.mini-cl .r1 .p{width:16px;color:var(--tenue);font-size:13px}
+.mini-cl .r1 .nm{flex:1}
+.mini-cl .r1 .mini{width:20px;height:20px}
 .chiudi{background:var(--magenta);color:#fff;border:0;border-radius:10px;padding:10px 16px;
   font:700 15px/1 "Barlow Condensed";letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
 footer{text-align:center;padding:18px 12px 26px;color:var(--tenue);font-size:14px}
@@ -256,16 +263,22 @@ function vistaClassifica(){
       <td><img class="mini" src="${SQ[r.k].logo}">${esc(nomeSq(r.k))}</td>
       <td class="r">${r.g}</td><td class="r">${r.v}</td><td class="r">${r.n}</td>
       <td class="r">${r.p}</td><td class="r">${r.pt}</td><td class="r">${r.tot}</td></tr>`).join("")}
-    </tbody></table>
-    <h2>I risultati</h2>` +
-    LEGA.giornate.slice().reverse().map(g => `<div class="card">
-      <span class="tag">${g.n}ª giornata</span> <span class="pill">${g.serieA}ª di Serie A · ${esc(g.data)}</span>
-      <div style="margin-top:8px">${g.partite.map(p => `<div class="match">
-        <div class="lato${p.gc > p.gt ? " vinto" : ""}"><img class="mini" src="${SQ[p.c].logo}">
-          <span class="nome">${esc(SQ[p.c].breve)}</span><span class="gol">${p.gc}</span></div>
-        <div class="lato${p.gt > p.gc ? " vinto" : ""}"><img class="mini" src="${SQ[p.t].logo}">
-          <span class="nome">${esc(SQ[p.t].breve)}</span><span class="gol">${p.gt}</span></div>
-        <div class="fp">${p.pc} - ${p.pt} fantapunti</div></div>`).join("")}</div></div>`).join("");
+    </tbody></table>` + altreClassifiche(cl);
+}
+
+function altreClassifiche(cl){
+  const best = {};
+  prestazioni().forEach(x => { if (!best[x.sq] || x.punti > best[x.sq]) best[x.sq] = x.punti; });
+  const blocco = (titolo, righe) => `<div class="card mini-cl"><h3>${titolo}</h3>` +
+    righe.map((r,i) => `<div class="r1"><span class="p">${i+1}</span><img class="mini" src="${SQ[r.k].logo}" alt="">
+      <span class="nm">${esc(SQ[r.k].breve)}</span><b>${r.v}</b></div>`).join("") + `</div>`;
+  const tutte = cl.map(r => ({k:r.k, gf:r.gf, gs:r.gs, mp:best[r.k] || 0}));
+  const ord = (campo, dir) => tutte.slice().sort((a,b) => dir * (b[campo] - a[campo]))
+    .map(r => ({k:r.k, v:r[campo]}));
+  return `<h2 style="font-size:18px">Le altre classifiche, quelle che non contano 😅</h2>` +
+    blocco("🔥 Miglior punteggio in una giornata", ord("mp", 1)) +
+    blocco("⚽ Gol fatti", ord("gf", 1)) +
+    blocco("😅 Gol subiti", ord("gs", 1));
 }
 
 function uscitaGiornata(n){
@@ -566,7 +579,7 @@ function vistaNumero(num){
 }
 
 /* ---------- navigazione ---------- */
-const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["classifica","Classifica"],["giornate","Giornate"],
+const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["giornate","Giornate"],["classifica","Classifica"],
                  ["statistiche","Statistiche"],["squadre","Squadre"],["mercato","Mercato"]];
 let sezioneCorrente = "prima";
 
