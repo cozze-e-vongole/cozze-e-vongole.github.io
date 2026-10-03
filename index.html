@@ -275,7 +275,7 @@ function altreClassifiche(cl){
   const tutte = cl.map(r => ({k:r.k, gf:r.gf, gs:r.gs, mp:best[r.k] || 0}));
   const ord = (campo, dir) => tutte.slice().sort((a,b) => dir * (b[campo] - a[campo]))
     .map(r => ({k:r.k, v:r[campo]}));
-  return `<h2 style="font-size:18px">Le altre classifiche, quelle che non contano 😅</h2>` +
+  return `<h2 style="font-size:18px">Le altre classifiche, quelle che lasciano un po' l'amaro in bocca...</h2>` +
     blocco("🔥 Miglior punteggio in una giornata", ord("mp", 1)) +
     blocco("⚽ Gol fatti", ord("gf", 1)) +
     blocco("😅 Gol subiti", ord("gs", 1));
@@ -284,6 +284,13 @@ function altreClassifiche(cl){
 function uscitaGiornata(n){
   const post = LEGA.uscite.filter(u => u.tipo === "post").sort((a,b) => a.num - b.num);
   return post[n-1] || null;
+}
+function mvpGiornata(n){
+  const l = LEGA.fantavoti.filter(x => x.n === n);
+  if (!l.length) return "";
+  const max = Math.max(...l.map(x => x.v));
+  return l.filter(x => x.v === max).map(x =>
+    `<b>${esc(x.g)}</b> (${esc(SQ[x.s].nome.replace(/^Fc /, "FC "))}) con ${x.v}`).join(" · ");
 }
 function vistaGiornate(){
   $("sec-giornate").innerHTML = `<h2>Le giornate</h2>` + LEGA.giornate.slice().reverse().map(g => {
@@ -294,6 +301,7 @@ function vistaGiornate(){
         <div class="a${p.gc > p.gt ? " vinto" : ""}"><span>${esc(SQ[p.c].breve)}</span><img class="mini" src="${SQ[p.c].logo}" alt=""></div>
         <div class="ris">${p.gc} - ${p.gt}</div>
         <div class="b${p.gt > p.gc ? " vinto" : ""}"><img class="mini" src="${SQ[p.t].logo}" alt=""><span>${esc(SQ[p.t].breve)}</span></div></div>`).join("")}</div>
+      ${mvpGiornata(g.n) ? `<p style="margin:10px 0 0;font-size:15px">⭐ MVP della giornata: ${mvpGiornata(g.n)}</p>` : ""}
       ${u ? `<button class="gvai" data-num="${u.num}">Leggi l'articolo · Numero ${u.num} <span>&rarr;</span></button>` : ""}</div>`;
   }).join("");
 }
