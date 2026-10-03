@@ -128,6 +128,18 @@ tr.primo td{background:var(--giallo);color:#121112;font-weight:700}
   font-weight:700;margin:8px 0 3px}
 .rosa .g{display:flex;justify-content:space-between;border-bottom:1px dotted var(--bordo);padding:3px 0;font-size:16px}
 .testo{white-space:pre-wrap;font-family:Literata,Georgia,serif;font-size:16px;line-height:1.55}
+.gr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:1px solid var(--bordo);font-size:15px}
+.gr:last-of-type{border-bottom:0}
+.gr .a,.gr .b{display:flex;align-items:center;gap:6px;min-width:0}
+.gr .a{justify-content:flex-end;text-align:right}
+.gr .mini{width:22px;height:22px;flex:none}
+.gr .vinto span{font-weight:700}
+.gr .ris{font-weight:700;white-space:nowrap}
+.gvai{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;
+  background:var(--magenta);color:#fff;border:0;border-radius:10px;padding:12px 16px;width:100%;
+  font:inherit;font-weight:700;font-size:17px;cursor:pointer;text-align:left}
+.gvai span{font-size:22px;line-height:1}
 .chiudi{background:var(--magenta);color:#fff;border:0;border-radius:10px;padding:10px 16px;
   font:700 15px/1 "Barlow Condensed";letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
 footer{text-align:center;padding:18px 12px 26px;color:var(--tenue);font-size:14px}
@@ -154,6 +166,7 @@ footer button{background:none;border:2px solid var(--bordo);color:var(--tenue);b
   <section id="sec-prima" class="on"></section>
   <section id="sec-archivio"></section>
   <section id="sec-classifica"></section>
+  <section id="sec-giornate"></section>
   <section id="sec-statistiche"></section>
   <section id="sec-squadre"></section>
   <section id="sec-mercato"></section>
@@ -253,6 +266,23 @@ function vistaClassifica(){
         <div class="lato${p.gt > p.gc ? " vinto" : ""}"><img class="mini" src="${SQ[p.t].logo}">
           <span class="nome">${esc(SQ[p.t].breve)}</span><span class="gol">${p.gt}</span></div>
         <div class="fp">${p.pc} - ${p.pt} fantapunti</div></div>`).join("")}</div></div>`).join("");
+}
+
+function uscitaGiornata(n){
+  const post = LEGA.uscite.filter(u => u.tipo === "post").sort((a,b) => a.num - b.num);
+  return post[n-1] || null;
+}
+function vistaGiornate(){
+  $("sec-giornate").innerHTML = `<h2>Le giornate</h2>` + LEGA.giornate.slice().reverse().map(g => {
+    const u = uscitaGiornata(g.n);
+    return `<div class="card"><span class="tag">${g.n}ª giornata</span>
+      <span class="pill">${g.serieA}ª di Serie A · ${esc(g.data)}</span>
+      <div style="margin-top:8px">${g.partite.map(p => `<div class="gr">
+        <div class="a${p.gc > p.gt ? " vinto" : ""}"><span>${esc(SQ[p.c].breve)}</span><img class="mini" src="${SQ[p.c].logo}" alt=""></div>
+        <div class="ris">${p.gc} - ${p.gt}</div>
+        <div class="b${p.gt > p.gc ? " vinto" : ""}"><img class="mini" src="${SQ[p.t].logo}" alt=""><span>${esc(SQ[p.t].breve)}</span></div></div>`).join("")}</div>
+      ${u ? `<button class="gvai" data-num="${u.num}">Leggi l'articolo · Numero ${u.num} <span>&rarr;</span></button>` : ""}</div>`;
+  }).join("");
 }
 
 function vistaStatistiche(){
@@ -536,7 +566,7 @@ function vistaNumero(num){
 }
 
 /* ---------- navigazione ---------- */
-const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["classifica","Classifica"],
+const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["classifica","Classifica"],["giornate","Giornate"],
                  ["statistiche","Statistiche"],["squadre","Squadre"],["mercato","Mercato"]];
 let sezioneCorrente = "prima";
 
@@ -580,7 +610,7 @@ function init(){
   $("piede").textContent = "Archivio non ufficiale della " + LEGA.nome + " · stagione " + LEGA.stagione;
   $("nav").innerHTML = SEZIONI.map(([id,t]) =>
     `<button data-sez="${id}"${id==="prima"?' aria-current="true"':""}>${t}</button>`).join("");
-  vistaPrima(); vistaArchivio(); vistaClassifica(); vistaStatistiche(); vistaSquadre(); vistaMercato();
+  vistaPrima(); vistaArchivio(); vistaClassifica(); vistaGiornate(); vistaStatistiche(); vistaSquadre(); vistaMercato();
 
   document.addEventListener("click", e => {
     const nav = e.target.closest("#nav button");
