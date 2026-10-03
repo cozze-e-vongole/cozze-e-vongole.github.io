@@ -272,11 +272,11 @@ function altreClassifiche(cl){
   const blocco = (titolo, righe) => `<div class="card mini-cl"><h3>${titolo}</h3>` +
     righe.map((r,i) => `<div class="r1"><span class="p">${i+1}</span><img class="mini" src="${SQ[r.k].logo}" alt="">
       <span class="nm">${esc(SQ[r.k].breve)}</span><b>${r.v}</b></div>`).join("") + `</div>`;
-  const tutte = cl.map(r => ({k:r.k, gf:r.gf, gs:r.gs, mp:best[r.k] || 0}));
+  const tutte = cl.map(r => ({k:r.k, gf:r.gf, gs:r.gs, mp:+r.tot.toFixed(1)}));
   const ord = (campo, dir) => tutte.slice().sort((a,b) => dir * (b[campo] - a[campo]))
     .map(r => ({k:r.k, v:r[campo]}));
   return `<h2 style="font-size:18px">Le altre classifiche, quelle che lasciano un po' l'amaro in bocca...</h2>` +
-    blocco("🔥 Miglior punteggio in una giornata", ord("mp", 1)) +
+    blocco("🔥 Miglior punteggio (fantapunti totali)", ord("mp", 1)) +
     blocco("⚽ Gol fatti", ord("gf", 1)) +
     blocco("😅 Gol subiti", ord("gs", 1));
 }
