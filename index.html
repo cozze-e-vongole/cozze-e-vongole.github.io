@@ -615,7 +615,7 @@ function init(){
   $("hLega").textContent = LEGA.nome;
   $("hAgg").textContent = "Aggiornato al " + LEGA.aggiornato;
   $("hSotto").textContent = "Stagione " + LEGA.stagione + " · archivio delle uscite";
-  $("piede").textContent = "Archivio non ufficiale della " + LEGA.nome + " · stagione " + LEGA.stagione;
+  $("piede").textContent = "Archivio ufficiale della " + LEGA.nome + " · stagione " + LEGA.stagione;
   $("nav").innerHTML = SEZIONI.map(([id,t]) =>
     `<button data-sez="${id}"${id==="prima"?' aria-current="true"':""}>${t}</button>`).join("");
   vistaPrima(); vistaArchivio(); vistaClassifica(); vistaGiornate(); vistaStatistiche(); vistaSquadre(); vistaMercato();
