@@ -607,10 +607,10 @@ function esisteNumero(n){ return LEGA.uscite.some(u => u.num === n); }
 function leggiHash(h){
   h = String(h || "").replace(/^#/, "").trim();
   if (!h) return {sez:"prima"};
-  const m = h.match(/^n(\d+(?:[.,]\d+)?)$/i);
+  const m = h.match(/^n(\d+(?:[.,]\d+)?)(-pensieri)?$/i);
   if (m){
     const num = parseFloat(m[1].replace(",", "."));
-    return esisteNumero(num) ? {sez:"numero", num:num} : {sez:"prima", ripiego:true};
+    return esisteNumero(num) ? {sez:"numero", num:num, vai:(m[2] ? "edit" : null)} : {sez:"prima", ripiego:true};
   }
   if (SEZIONI.some(([id]) => id === h)) return {sez:h};
   return {sez:"prima", ripiego:true};
@@ -631,7 +631,11 @@ function mostra(sez, push, num){
 }
 
 function rendi(st){
-  if (st.sez === "numero"){ vistaNumero(st.num); mostra("numero", false, st.num); }
+  if (st.sez === "numero"){
+    vistaNumero(st.num); mostra("numero", false, st.num);
+    const el = st.vai && document.querySelector("#sec-numero ." + st.vai);
+    if (el) setTimeout(() => el.scrollIntoView({block:"start"}), 150);
+  }
   else mostra(st.sez, false);
 }
 
@@ -684,7 +688,7 @@ function init(){
   if (st.sez === "numero"){
     sezioneCorrente = "archivio";
     history.replaceState({sez:"archivio", num:null}, "", "#archivio");
-    history.pushState({sez:"numero", num:st.num}, "", "#n" + st.num);
+    history.pushState({sez:"numero", num:st.num}, "", "#n" + st.num + (st.vai ? "-pensieri" : ""));
     rendi(st);
   } else {
     history.replaceState({sez:st.sez, num:null}, "", "#" + st.sez);
