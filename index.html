@@ -634,7 +634,7 @@ function rendi(st){
   if (st.sez === "numero"){
     vistaNumero(st.num); mostra("numero", false, st.num);
     const el = st.vai && document.querySelector("#sec-numero ." + st.vai);
-    if (el) setTimeout(() => el.scrollIntoView({block:"start"}), 150);
+    if (el) setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"start"}), 900);
   }
   else mostra(st.sez, false);
 }
