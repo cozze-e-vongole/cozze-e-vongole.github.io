@@ -154,6 +154,31 @@ tr.primo td{background:var(--giallo);color:#121112;font-weight:700}
 .mini-cl .r1 .p{width:16px;color:var(--tenue);font-size:13px}
 .mini-cl .r1 .nm{flex:1}
 .mini-cl .r1 .mini{width:20px;height:20px}
+.sfg-testa{background:#2B2B30;border-radius:16px;padding:18px 14px 12px;margin:30px 0 14px;text-align:center;color:#fff}
+.sfg-testa h2{margin:0;font-size:30px;color:#fff;letter-spacing:.01em}
+.sfg-testa .sotto{font-family:"Barlow Condensed",Arial,sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--giallo);font-size:14px;margin:4px 0 10px}
+.sfg-testa svg{display:block;width:100%;max-width:300px;margin:0 auto}
+.sfg-testa .ago{font-size:14px;color:#ddd;margin-top:6px}
+.sfg-testa .ago b{color:#fff}
+.sfg-sotto{font-family:"Barlow Condensed",Arial,sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--magenta);font-size:14px;margin:0 2px 10px}
+.sfg-premi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.sfg-premi .pr{background:var(--carta);border:2px solid var(--bordo);border-radius:12px;padding:10px 8px;text-align:center}
+.sfg-premi .pr .em{font-size:22px}
+.sfg-premi .pr .et{font-family:"Barlow Condensed",Arial,sans-serif;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tenue);margin-top:2px}
+.sfg-premi .pr img{width:40px;height:40px;border-radius:50%;margin:6px 0 2px}
+.sfg-premi .pr .nm{font-weight:700;font-size:14px;line-height:1.15}
+.sfg-premi .pr .vl{font-size:13px;color:var(--magenta);font-weight:700;margin-top:2px}
+.sfg-pos{color:#1B7F3B;font-weight:700}
+.sfg-neg{color:var(--magenta);font-weight:700}
+.sfg-zero{color:var(--tenue)}
+.sfg-ep{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sfg-ep .card{margin:0}
+.sfg-ep h3{font-size:15px;margin:0 0 6px}
+.sfg-ep .r1{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:14px;border-bottom:1px solid var(--bordo)}
+.sfg-ep .r1:last-child{border-bottom:0}
+.sfg-ep .r1 .mini{width:18px;height:18px}
+.sfg-ep .r1 .nm{flex:1}
+.sfg-nota{font-size:13px;color:var(--tenue);margin:10px 2px 0;line-height:1.4}
 .chiudi{background:var(--magenta);color:#fff;border:0;border-radius:10px;padding:10px 16px;
   font:700 15px/1 "Barlow Condensed";letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
 footer{text-align:center;padding:18px 12px 26px;color:var(--tenue);font-size:14px}
@@ -395,7 +420,70 @@ function vistaStatistiche(){
       <td><img class="mini" src="${SQ[k].logo}">${esc(SQ[k].breve)}</td>
       <td class="r"><b>${v}</b></td></tr>`).join("")}</tbody></table>`);
 
+  blocchi.push(sfigometro());
+
   $("sec-statistiche").innerHTML = blocchi.join("");
+}
+
+function sfigometro(){
+  const reale = classifica();
+  const posReale = {}; reale.forEach((r,i) => posReale[r.k] = i+1);
+  const t = {}; Object.keys(SQ).forEach(k => t[k] = {k, mer:0, g:0, fortu:0, sfiga:0, filo:0, soffio:0, beffa:0, rubata:0, serie:[]});
+  LEGA.giornate.forEach(g => {
+    const pts = {}; g.partite.forEach(p => { pts[p.c] = p.pc; pts[p.t] = p.pt; });
+    Object.keys(pts).forEach(k => {
+      let w = 0, d = 0; const a = golDa(pts[k]);
+      Object.keys(pts).forEach(k2 => { if (k2 === k) return; const b = golDa(pts[k2]); if (a > b) w++; else if (a === b) d++; });
+      const m = (3*w + d) / (Object.keys(pts).length - 1);
+      t[k].mer += m; t[k].g++;
+      if (a > 0 && pts[k] - (66 + 3*(a-1)) <= 1.5) t[k].filo++;
+      if (mancava(pts[k]) <= 1.5) t[k].soffio++;
+    });
+    g.partite.forEach(p => {
+      const vc = p.gc > p.gt, vt = p.gt > p.gc;
+      if (vt && p.pc > p.pt) { t[p.c].beffa++; t[p.t].rubata++; }
+      if (vc && p.pt > p.pc) { t[p.t].beffa++; t[p.c].rubata++; }
+    });
+    Object.keys(pts).forEach(k => {
+      const rr = reale.find(x => x.k === k);
+      t[k].serie.push(+(t[k].mer).toFixed(1));
+    });
+  });
+  const righe = Object.values(t).map(o => {
+    const rr = reale.find(x => x.k === o.k);
+    return {...o, pt: rr.pt, mer:+o.mer.toFixed(1), diff:+(rr.pt - o.mer).toFixed(1)};
+  }).sort((a,b) => b.mer - a.mer || b.pt - a.pt);
+  const posMer = {}; righe.forEach((r,i) => posMer[r.k] = i+1);
+  const fort = righe.slice().sort((a,b) => b.diff - a.diff)[0];
+  const sfig = righe.slice().sort((a,b) => a.diff - b.diff)[0];
+  const primo = righe[0];
+  const segno = v => v > 0 ? `<span class="sfg-pos">+${v}</span>` : v < 0 ? `<span class="sfg-neg">${v}</span>` : `<span class="sfg-zero">0</span>`;
+  const mossa = k => { const d = posReale[k] - posMer[k]; return d > 0 ? `<span class="sfg-pos">▲${d}</span>` : d < 0 ? `<span class="sfg-neg">▼${-d}</span>` : `<span class="sfg-zero">=</span>`; };
+  const pr = (em, et, o, vl) => `<div class="pr"><div class="em">${em}</div><div class="et">${et}</div>
+    <img src="${SQ[o.k].logo}" alt=""><div class="nm">${esc(SQ[o.k].breve)}</div><div class="vl">${vl}</div></div>`;
+  const ep = (tit, campo, verso) => `<div class="card"><h3>${tit}</h3>` + righe.slice().sort((a,b) => verso*(b[campo]-a[campo]))
+    .map(o => `<div class="r1"><img class="mini" src="${SQ[o.k].logo}" alt=""><span class="nm">${esc(SQ[o.k].breve)}</span><b>${o[campo]}</b></div>`).join("") + `</div>`;
+  return `<div class="sfg-testa"><h2>Lo Sfigometro</h2>
+    <div class="sotto">Se fosse andata come doveva andare</div>
+    ${quadranteSfiga(sfig, fort)}
+    <div class="ago">La lancetta segna il più sfortunato: <b>${esc(SQ[sfig.k].breve)}</b> a ${sfig.diff}</div></div>
+    <div class="card" style="margin-bottom:12px"><p style="margin:0;color:var(--tenue);font-size:16px">
+      E se il calendario non c'entrasse? Qui ogni squadra gioca contro tutte le altre sette, ogni giornata, con i gol delle soglie di sempre.
+      Non è la classifica vera: è quella che dice quanto hai meritato. La differenza tra i punti veri e quelli meritati è lo sfigometro:
+      sotto zero sei sfortunato, sopra zero ringrazia il calendario.</p></div>
+    <div class="sfg-premi">
+      ${pr("🍀", "Il più fortunato", fort, "+" + fort.diff + " punti regalati")}
+      ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati")}
+      ${pr("👑", "Primo senza sfiga", primo, primo.mer + " punti meritati")}
+    </div>
+    <div class="card" style="margin-bottom:12px">${graficoSfiga(righe)}</div>
+    <h3 style="font-size:17px;margin:6px 2px 8px">Dal più fortunato al più sfortunato</h3>
+    <table><thead><tr><th></th><th>Squadra</th><th class="r">Veri</th><th class="r">Meritati</th><th class="r">Sfigometro</th></tr></thead>
+    <tbody>${righe.slice().sort((a,b) => b.diff - a.diff || b.mer - a.mer).map((o,i) => `<tr><td class="n">${i+1}</td>
+      <td><img class="mini" src="${SQ[o.k].logo}">${esc(SQ[o.k].breve)} <span style="font-size:13px">${mossa(o.k)}</span></td>
+      <td class="r">${o.pt}</td><td class="r"><b>${o.mer}</b></td><td class="r">${segno(o.diff)}</td></tr>`).join("")}</tbody></table>
+    <p class="sfg-nota">La freccia accanto al nome dice di quante posizioni la squadra salirebbe o scenderebbe nella classifica meritata.</p>
+    <p class="sfg-nota">Stime a scopo ricreativo: la classifica ufficiale resta quella dell'app, e le lamentele vanno al calendario.</p>`;
 }
 
 function vistaTop11(){
@@ -418,6 +506,49 @@ function vistaTop11(){
     </div>
     <p style="margin:10px 0 0;color:var(--tenue);font-size:16px">La formazione con il punteggio più alto
     finora. Curiosità: aveva quattro riserve da 10 in panchina.</p></div>`;
+}
+
+function quadranteSfiga(sfig, fort){
+  const max = Math.max(1, Math.abs(sfig.diff), Math.abs(fort.diff));
+  const W = 300, H = 186, cx = 150, cy = 150, R = 124, r = 84;
+  const arc = (a0, a1, col) => {
+    const p = a => [cx + R * Math.cos(a), cy - R * Math.sin(a)], q = a => [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+    const [x0,y0] = p(a0), [x1,y1] = p(a1), [x2,y2] = q(a1), [x3,y3] = q(a0);
+    return `<path d="M${x0},${y0} A${R},${R} 0 0 0 ${x1},${y1} L${x2},${y2} A${r},${r} 0 0 1 ${x3},${y3} Z" fill="${col}"/>`;
+  };
+  const seg = [["#C8003F",Math.PI,Math.PI*0.8],["#E8475F",Math.PI*0.8,Math.PI*0.6],["#F4B400",Math.PI*0.6,Math.PI*0.4],["#7FBF4D",Math.PI*0.4,Math.PI*0.2],["#1B7F3B",Math.PI*0.2,0]];
+  const ang = Math.PI/2 + (sfig.diff / max) * (Math.PI/2) * -1;
+  const nx = cx + (R - 16) * Math.cos(ang), ny = cy - (R - 16) * Math.sin(ang);
+  return `<svg viewBox="0 0 ${W} ${H}" font-family="'Barlow Condensed',Arial,sans-serif">
+    ${seg.map(([c,a0,a1]) => arc(a0, a1, c)).join("")}
+    <text x="${cx-R+ (R-r)/2}" y="${cy+22}" font-size="12" fill="#ddd" font-weight="700" text-anchor="middle">SFIGA</text>
+    <text x="${cx+R-(R-r)/2}" y="${cy+22}" font-size="12" fill="#ddd" font-weight="700" text-anchor="middle">FORTUNA</text>
+    <text x="${cx}" y="22" font-size="11" fill="#bbb" text-anchor="middle">0</text>
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="11" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="5" fill="#2B2B30"/>
+    <image href="${SQ[sfig.k].logo}" x="${cx-22}" y="${cy-58}" width="44" height="44" clip-path="circle(22px at 22px 22px)"/>
+  </svg>`;
+}
+
+function graficoSfiga(righe){
+  const d = righe.slice().sort((a,b) => b.diff - a.diff);
+  const max = Math.max(1, ...d.map(o => Math.abs(o.diff)));
+  const W = 360, LAB = 118, rowH = 30, H = d.length * rowH + 30, x0 = LAB + 6, x1 = W - 6;
+  const mid = x0 + (x1 - x0) * 0.45, half = Math.min(mid - x0, x1 - mid) - 30;
+  const X = v => mid + (v / max) * half;
+  let out = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;font-family:'Barlow Condensed',Arial,sans-serif">`;
+  out += `<text x="${x0}" y="14" font-size="12" fill="var(--tenue)" text-anchor="start">SFORTUNA</text>`;
+  out += `<text x="${x1}" y="14" font-size="12" fill="var(--tenue)" text-anchor="end">FORTUNA</text>`;
+  out += `<line x1="${mid}" y1="22" x2="${mid}" y2="${H-4}" stroke="var(--testo)" stroke-width="1.5"/>`;
+  d.forEach((o,i) => {
+    const y = 26 + i * rowH, w = Math.abs(X(o.diff) - mid), xb = o.diff >= 0 ? mid : mid - w;
+    const col = o.diff > 0 ? "#1B7F3B" : o.diff < 0 ? "var(--magenta)" : "var(--tenue)";
+    out += `<text x="${LAB}" y="${y+16}" text-anchor="end" font-size="13" font-weight="600" fill="var(--testo)">${esc(SQ[o.k].breve)}</text>`;
+    out += `<rect x="${xb}" y="${y+4}" width="${Math.max(2,w)}" height="18" rx="4" fill="${col}"/>`;
+    const tx = o.diff >= 0 ? X(o.diff) + 5 : X(o.diff) - 5;
+    out += `<text x="${tx}" y="${y+17}" font-size="13" font-weight="700" fill="${col}" text-anchor="${o.diff >= 0 ? "start" : "end"}">${o.diff > 0 ? "+" : ""}${o.diff}</text>`;
+  });
+  return out + `</svg>`;
 }
 
 function termometro(){
