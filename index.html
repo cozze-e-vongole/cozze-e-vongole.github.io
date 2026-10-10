@@ -307,7 +307,7 @@ function vistaClassifica(){
       <td><img class="mini" src="${SQ[r.k].logo}">${esc(nomeSq(r.k))}</td>
       <td class="r">${r.g}</td><td class="r">${r.v}</td><td class="r">${r.n}</td>
       <td class="r">${r.p}</td><td class="r">${r.pt}</td><td class="r">${r.tot}</td></tr>`).join("")}
-    </tbody></table>` + altreClassifiche(cl);
+    </tbody></table>` + altreClassifiche(cl) + sfigometro();
 }
 
 function altreClassifiche(cl){
@@ -419,8 +419,6 @@ function vistaStatistiche(){
       .map(([k,v],i) => `<tr${i?"":' class="primo"'}><td class="n">${i+1}</td>
       <td><img class="mini" src="${SQ[k].logo}">${esc(SQ[k].breve)}</td>
       <td class="r"><b>${v}</b></td></tr>`).join("")}</tbody></table>`);
-
-  blocchi.push(sfigometro());
 
   $("sec-statistiche").innerHTML = blocchi.join("");
 }
