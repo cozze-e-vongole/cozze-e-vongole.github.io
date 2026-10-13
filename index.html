@@ -465,7 +465,7 @@ function sfigometro(){
   const salto = o => posMer[o.k] - posReale[o.k];
   const fort = righe.slice().sort((a,b) => b.diff - a.diff || salto(b) - salto(a))[0];
   const sfig = righe.slice().sort((a,b) => a.diff - b.diff || salto(a) - salto(b))[0];
-  const primo = righe[0];
+  const giusto = righe.slice().sort((a,b) => Math.abs(a.diff) - Math.abs(b.diff) || Math.abs(salto(a)) - Math.abs(salto(b)) || b.pt - a.pt)[0];
   const segno = v => v > 0 ? `<span class="sfg-pos">+${v}</span>` : v < 0 ? `<span class="sfg-neg">${v}</span>` : `<span class="sfg-zero">0</span>`;
   const mossa = k => { const d = posReale[k] - posMer[k]; return d > 0 ? `<span class="sfg-pos">▲${d}</span>` : d < 0 ? `<span class="sfg-neg">▼${-d}</span>` : `<span class="sfg-zero">=</span>`; };
   const pr = (em, et, o, vl) => `<div class="pr"><div class="em">${em}</div><div class="et">${et}</div>
@@ -483,7 +483,7 @@ function sfigometro(){
     <div class="sfg-premi">
       ${pr("🍀", "Il più fortunato", fort, "+" + fort.diff + " punti regalati" + (salto(fort) > 0 ? ", " + salto(fort) + (salto(fort) === 1 ? " posto" : " posti") + " in più" : ""))}
       ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati" + (salto(sfig) < 0 ? ", " + (-salto(sfig)) + (salto(sfig) === -1 ? " posto" : " posti") + " in meno" : ""))}
-      ${pr("👑", "Primo senza sfiga", primo, primo.mer + " punti meritati")}
+      ${pr("⚖️", "Il più giusto", giusto, (giusto.diff > 0 ? "+" : "") + giusto.diff + ", fortuna quasi a zero")}
     </div>
     <div class="card" style="margin-bottom:12px">${graficoSfiga(righe)}</div>
     <h3 style="font-size:17px;margin:6px 2px 8px">Dal più fortunato al più sfortunato</h3>
