@@ -452,8 +452,9 @@ function sfigometro(){
     return {...o, pt: rr.pt, mer:+o.mer.toFixed(1), diff:+(rr.pt - o.mer).toFixed(1)};
   }).sort((a,b) => b.mer - a.mer || b.pt - a.pt);
   const posMer = {}; righe.forEach((r,i) => posMer[r.k] = i+1);
-  const fort = righe.slice().sort((a,b) => b.diff - a.diff)[0];
-  const sfig = righe.slice().sort((a,b) => a.diff - b.diff)[0];
+  const salto = o => posMer[o.k] - posReale[o.k];
+  const fort = righe.slice().sort((a,b) => b.diff - a.diff || salto(b) - salto(a))[0];
+  const sfig = righe.slice().sort((a,b) => a.diff - b.diff || salto(a) - salto(b))[0];
   const primo = righe[0];
   const segno = v => v > 0 ? `<span class="sfg-pos">+${v}</span>` : v < 0 ? `<span class="sfg-neg">${v}</span>` : `<span class="sfg-zero">0</span>`;
   const mossa = k => { const d = posReale[k] - posMer[k]; return d > 0 ? `<span class="sfg-pos">▲${d}</span>` : d < 0 ? `<span class="sfg-neg">▼${-d}</span>` : `<span class="sfg-zero">=</span>`; };
@@ -470,8 +471,8 @@ function sfigometro(){
       Non è la classifica vera: è quella che dice quanto hai meritato. La differenza tra i punti veri e quelli meritati è lo sfigometro:
       sotto zero sei sfortunato, sopra zero ringrazia il calendario.</p></div>
     <div class="sfg-premi">
-      ${pr("🍀", "Il più fortunato", fort, "+" + fort.diff + " punti regalati")}
-      ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati")}
+      ${pr("🍀", "Il più fortunato", fort, "+" + fort.diff + " punti regalati" + (salto(fort) > 0 ? ", " + salto(fort) + (salto(fort) === 1 ? " posto" : " posti") + " in più" : ""))}
+      ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati" + (salto(sfig) < 0 ? ", " + (-salto(sfig)) + (salto(sfig) === -1 ? " posto" : " posti") + " in meno" : ""))}
       ${pr("👑", "Primo senza sfiga", primo, primo.mer + " punti meritati")}
     </div>
     <div class="card" style="margin-bottom:12px">${graficoSfiga(righe)}</div>
