@@ -198,7 +198,7 @@ footer{text-align:center;padding:18px 12px 26px;color:var(--tenue);font-size:14p
 :root[data-theme="dark"] .credito{opacity:.7}
 footer button{background:none;border:2px solid var(--bordo);color:var(--tenue);border-radius:999px;
   padding:8px 16px;font:600 14px/1 "Barlow Condensed";text-transform:uppercase;letter-spacing:.06em}
-.cover,.edimg,.fpart{cursor:zoom-in}
+.cover,.fpart{cursor:zoom-in}
 .fpart{float:left;width:47%;max-width:270px;border-radius:10px;border:1px solid var(--bordo);display:block;margin:6px 14px 6px 0}
 .art > :not(p):not(.fpart){clear:both}
 .galleria{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 14px}
@@ -774,7 +774,7 @@ function lbMostra(){
 }
 function lbApri(el){
   const box = el.closest(".card") || document;
-  LBG = [...box.querySelectorAll(".cover, .fcop, .fpart, .edimg")];
+  LBG = [...box.querySelectorAll(".cover, .fcop, .fpart")];
   LBI = Math.max(0, LBG.indexOf(el));
   lbMostra(); $("lb").classList.add("on"); document.body.style.overflow = "hidden";
 }
@@ -851,7 +851,7 @@ function init(){
       if (e.target.tagName !== "IMG" || e.target.closest(".x")) { lbChiudi(); }
       return;
     }
-    const zm = e.target.closest("#sec-numero .cover, #sec-numero .fpart, #sec-numero .edimg, #sec-prima .cover");
+    const zm = e.target.closest("#sec-numero .cover, #sec-numero .fpart, #sec-prima .cover");
     if (zm){ lbApri(zm); return; }
     const nav = e.target.closest("#nav button");
     if (nav){ mostra(nav.dataset.sez, true); return; }
