@@ -212,7 +212,10 @@ footer button{background:none;border:2px solid var(--bordo);color:var(--tenue);b
 #lb.quadra img{max-height:100vh;padding:56px 0}
 #lb button{position:fixed;z-index:2;border:1px solid rgba(255,255,255,.35);background:rgba(20,20,24,.6);color:#fff;font:700 22px/1 system-ui,sans-serif;width:44px;height:44px;border-radius:50%;cursor:pointer}
 #lb .x{top:10px;right:10px}
-#lb .tb{top:10px;left:10px;width:auto;height:40px;border-radius:20px;padding:0 16px;font:700 15px/1 system-ui,sans-serif}
+#lb .tb{position:static;display:block;margin:18px auto 28px;width:auto;height:46px;border-radius:23px;padding:0 24px;font:700 16px/1 system-ui,sans-serif;flex:none}
+#lb.on.quadra{flex-direction:column}
+#lb.quadra img{max-height:calc(100vh - 120px)!important;padding:56px 0 0!important}
+#lb img{padding-bottom:0!important}
 .covwrap{position:relative;margin:10px 0}
 .covwrap .cover{margin:0!important}
 .covwrap .zona{position:absolute;padding:0;border:0;background:transparent;cursor:zoom-in;border-radius:4px}
@@ -936,6 +939,6 @@ function init(){
 init();
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ace666347312481899104245faeb15bf"}'></script><!-- End Cloudflare Web Analytics -->
-<div id="lb"><button class="tb" aria-label="Torna indietro">← Torna indietro</button><button class="x" aria-label="Chiudi">✕</button><button class="pr" aria-label="Precedente">‹</button><button class="nx" aria-label="Successiva">›</button><img alt=""></div>
+<div id="lb"><button class="x" aria-label="Chiudi">✕</button><button class="pr" aria-label="Precedente">‹</button><button class="nx" aria-label="Successiva">›</button><img alt=""><button class="tb" aria-label="Torna indietro">← Torna indietro</button></div>
 </body>
 </html>
