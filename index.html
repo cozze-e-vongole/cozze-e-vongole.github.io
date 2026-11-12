@@ -944,5 +944,95 @@ init();
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ace666347312481899104245faeb15bf"}'></script><!-- End Cloudflare Web Analytics -->
 <div id="lb"><button class="x" aria-label="Chiudi">✕</button><button class="pr" aria-label="Precedente">‹</button><button class="nx" aria-label="Successiva">›</button><img alt=""><button class="tb" aria-label="Torna indietro">← Torna indietro</button></div>
+<!-- INSTALLA-APP:INIZIO -->
+<style>
+#ia-bar{position:fixed;left:0;right:0;bottom:0;z-index:900;display:none;align-items:center;justify-content:center;
+  gap:10px;padding:10px 52px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(20,33,61,.96);
+  box-shadow:0 -2px 10px rgba(0,0,0,.25)}
+#ia-bar.on{display:flex}
+#ia-btn{background:#ffd84d;color:#14213d;border:1.5px solid #14213d;border-radius:999px;padding:11px 22px;
+  font:700 17px/1.1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+#ia-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);margin-top:calc(env(safe-area-inset-bottom,0px) / -2);
+  width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:#fff;font:400 26px/1 system-ui,sans-serif;cursor:pointer}
+body.ia-spazio{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
+#ia-velo{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.45);display:none}
+#ia-velo.on{display:block}
+#ia-guida{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#fff;color:#14213d;
+  border-radius:18px 18px 0 0;padding:20px 20px calc(18px + env(safe-area-inset-bottom,0px));
+  font:400 17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
+#ia-guida h3{margin:0 0 12px;font:700 20px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#ia-guida ol{margin:0 0 10px;padding-left:22px}
+#ia-guida li{margin-bottom:8px}
+#ia-guida .ia-nota{font-size:15px;color:#555;margin:0 0 12px}
+#ia-ok{display:block;width:100%;background:#14213d;color:#fff;border:0;border-radius:12px;padding:13px;
+  font:700 17px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
+</style>
+<div id="ia-bar" role="region" aria-label="Installa come app">
+  <button id="ia-btn" type="button">📲 Installa come app</button>
+  <button id="ia-x" type="button" aria-label="Chiudi">×</button>
+</div>
+<div id="ia-velo"><div id="ia-guida" role="dialog" aria-modal="true" aria-labelledby="ia-tit">
+  <h3 id="ia-tit">Installa come app</h3>
+  <ol id="ia-passi"></ol>
+  <p class="ia-nota" id="ia-nota" hidden></p>
+  <button id="ia-ok" type="button">Ho capito</button>
+</div></div>
+<script>
+(function(){
+  var K_CHIUSO="ia_chiuso_il", K_FATTO="ia_installata", GIORNI=30;
+  function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  var ua=navigator.userAgent||"";
+  var standalone=(window.matchMedia&&(matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||matchMedia("(display-mode: minimal-ui)").matches))||navigator.standalone===true;
+  if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+  if(standalone) return;
+  if(get(K_FATTO)) return;
+  var t=parseInt(get(K_CHIUSO)||"0",10);
+  if(t && Date.now()-t < GIORNI*864e5) return;
+
+  var ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var iosAltro=ios&&/CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|YaBrowser|DuckDuckGo|Instagram|FBAN|FBAV|Line\//.test(ua);
+  var androidFirefox=/Android/.test(ua)&&/Firefox\//.test(ua);
+  var macSafari=!ios&&/Macintosh/.test(ua)&&/Safari\//.test(ua)&&!/Chrome|Chromium|CriOS|Edg\/|OPR\/|Firefox/.test(ua);
+
+  var GUIDE={
+    iosSafari:{p:["Tocca <b>Condividi</b> ⬆︎ nella barra in basso di Safari.","Scorri e tocca <b>“Aggiungi alla schermata Home”</b>.","Tocca <b>“Aggiungi”</b> in alto a destra."]},
+    iosAltro:{p:["Tocca <b>Condividi</b> ⬆︎ (vicino all'indirizzo, oppure nel menu ⋯).","Tocca <b>“Aggiungi alla schermata Home”</b>.","Tocca <b>“Aggiungi”</b>."],n:"Se non trovi la voce, apri la pagina con Safari e ripeti."},
+    androidFirefox:{p:["Tocca il menu <b>⋮</b> di Firefox.","Tocca <b>“Installa”</b> (o “Aggiungi a schermata Home”).","Conferma con <b>“Aggiungi”</b>."]},
+    macSafari:{p:["Nella barra dei menu apri <b>File</b>.","Scegli <b>“Aggiungi al Dock”</b>.","Conferma con <b>“Aggiungi”</b>."]}
+  };
+  var guida=ios?(iosAltro?"iosAltro":"iosSafari"):androidFirefox?"androidFirefox":macSafari?"macSafari":null;
+  var evento=null, disponibile=!!guida;
+
+  var bar=document.getElementById("ia-bar"), velo=document.getElementById("ia-velo");
+  function inHome(){var h=document.getElementById("sec-prima");return !!(h&&h.classList.contains("on"))}
+  function aggiorna(){
+    var lb=document.getElementById("lb"); var lbAperto=lb&&getComputedStyle(lb).display!=="none";
+    var vedi=disponibile&&inHome()&&!lbAperto;
+    bar.classList.toggle("on",vedi); document.body.classList.toggle("ia-spazio",vedi);
+  }
+  function spegni(){disponibile=false;velo.classList.remove("on");aggiorna()}
+  function apriGuida(){
+    var g=GUIDE[guida]; document.getElementById("ia-passi").innerHTML=g.p.map(function(x){return"<li>"+x+"</li>"}).join("");
+    var n=document.getElementById("ia-nota"); n.hidden=!g.n; n.textContent=g.n||"";
+    velo.classList.add("on");
+  }
+  document.getElementById("ia-btn").addEventListener("click",function(){
+    if(evento){var e=evento;evento=null;e.prompt();
+      (e.userChoice||Promise.resolve({})).then(function(r){if(r&&r.outcome==="accepted"){set(K_FATTO,"1");spegni()}});
+    } else if(guida){apriGuida()}
+  });
+  document.getElementById("ia-x").addEventListener("click",function(){set(K_CHIUSO,String(Date.now()));spegni()});
+  document.getElementById("ia-ok").addEventListener("click",function(){velo.classList.remove("on")});
+  velo.addEventListener("click",function(e){if(e.target===velo)velo.classList.remove("on")});
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();if(ios)return;evento=e;guida=null;disponibile=true;aggiorna()});
+  window.addEventListener("appinstalled",function(){set(K_FATTO,"1");spegni()});
+  var h=document.getElementById("sec-prima"); if(h&&window.MutationObserver){new MutationObserver(aggiorna).observe(h,{attributes:true,attributeFilter:["class"]})}
+  var lb=document.getElementById("lb"); if(lb&&window.MutationObserver){new MutationObserver(aggiorna).observe(lb,{attributes:true,attributeFilter:["style","class"]})}
+  window.addEventListener("hashchange",aggiorna); window.addEventListener("popstate",aggiorna);
+  aggiorna();
+})();
+</script>
+<!-- INSTALLA-APP:FINE -->
 </body>
 </html>
