@@ -1010,7 +1010,7 @@ body.ia-spazio{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))!impor
   var evento=null, disponibile=!!guida;
 
   var bar=document.getElementById("ia-bar"), velo=document.getElementById("ia-velo");
-  function inHome(){var h=document.getElementById("sec-prima");return !!(h&&h.classList.contains("on"))}
+  function inHome(){return ["sec-prima","sec-numero"].some(function(i){var h=document.getElementById(i);return !!(h&&h.classList.contains("on"))})}
   function aggiorna(){
     var lb=document.getElementById("lb"); var lbAperto=lb&&getComputedStyle(lb).display!=="none";
     var vedi=disponibile&&inHome()&&!lbAperto;
@@ -1033,6 +1033,7 @@ body.ia-spazio{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))!impor
   window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();if(ios)return;evento=e;guida=null;disponibile=true;aggiorna()});
   window.addEventListener("appinstalled",function(){set(K_FATTO,"1");spegni()});
   var h=document.getElementById("sec-prima"); if(h&&window.MutationObserver){new MutationObserver(aggiorna).observe(h,{attributes:true,attributeFilter:["class"]})}
+  var hn=document.getElementById("sec-numero"); if(hn&&window.MutationObserver){new MutationObserver(aggiorna).observe(hn,{attributes:true,attributeFilter:["class"]})}
   var lb=document.getElementById("lb"); if(lb&&window.MutationObserver){new MutationObserver(aggiorna).observe(lb,{attributes:true,attributeFilter:["style","class"]})}
   window.addEventListener("hashchange",aggiorna); window.addEventListener("popstate",aggiorna);
   aggiorna();
